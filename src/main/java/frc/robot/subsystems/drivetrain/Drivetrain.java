@@ -6,12 +6,15 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -39,24 +42,14 @@ public class Drivetrain extends SubsystemBase{
     private final RelativeEncoder leftEncoder = leftMotor1.getEncoder();
     //The PigeonIMU gyro.
     private final WPI_PigeonIMU gyro = new WPI_PigeonIMU(1); //Check port
+    //Field2d object to track pose in Glass
+    private final Field2d m_field = new Field2d();
+  
 
 
     //Drivetrain
     public Drivetrain(){
-        /*CANSparkMax leftMotorFront = new CANSparkMax(1, CANSparkMaxLowLevel.MotorType.kBrushless);
-        CANSparkMax leftMotorMid = new CANSparkMax(2, CANSparkMaxLowLevel.MotorType.kBrushless);
-        CANSparkMax leftMotorBack = new CANSparkMax(3, CANSparkMaxLowLevel.MotorType.kBrushless);
-        MotorControllerGroup left = new MotorControllerGroup(leftMotorFront, leftMotorMid, leftMotorBack);
-
-        CANSparkMax rightMotorFront = new CANSparkMax(4, CANSparkMaxLowLevel.MotorType.kBrushless);
-        CANSparkMax rightMotorMid = new CANSparkMax(5, CANSparkMaxLowLevel.MotorType.kBrushless);
-        CANSparkMax rightMotorBack = new CANSparkMax(6, CANSparkMaxLowLevel.MotorType.kBrushless);
-        MotorControllerGroup right = new MotorControllerGroup(rightMotorFront, rightMotorMid, rightMotorBack);
         
-        right.setInverted(true);
-
-        difDrive = new DifferentialDrive(left, right);*/
-
         //Reverses the right motors.
         rightMotors.setInverted(true);
         //Sets the distance per pulse to the pre-defined constant we calculated for both encoders.
@@ -73,6 +66,7 @@ public class Drivetrain extends SubsystemBase{
     //Constantly updates the odometry of the robot with the rotation and the distance traveled.
     public void periodic() {
         odometry.update(gyro.getRotation2d(), leftEncoder.getPosition(), rightEncoder.getPosition());
+        m_field.setRobotPose(odometry.getPoseMeters());
     }
 
     //Returns the pose of the robot.
@@ -81,7 +75,7 @@ public class Drivetrain extends SubsystemBase{
     }
 
     //Returns the current speed of the wheels of the robot.
-    public DifferentialDriveWheelSpeeds getWheelSpeeds() {
+    public DifferentialDriveWheelSpeeds getWheelSpeeds() { 
         return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
     }
 
@@ -90,6 +84,7 @@ public class Drivetrain extends SubsystemBase{
         resetEncoders();
         odometry.resetPosition(pose, gyro.getRotation2d());
     }
+
 
     //Drives the robot with arcade controls.
     public void arcadeDrive(double throttle, double turn) {
@@ -131,6 +126,14 @@ public class Drivetrain extends SubsystemBase{
         difDrive.setMaxOutput(maxOutPut);
     }
 
+    public double getLeftVoltage() {
+        return leftMotors.get();
+    }
+
+    public double getRightVoltage() {
+        return rightMotors.get();
+    }
+
     //Sets the recorded heading to 0. Makes new direction the 0 heading.
     public void zeroHeading() {
         gyro.reset();
@@ -146,19 +149,11 @@ public class Drivetrain extends SubsystemBase{
         return -gyro.getRate();
     }
 
+
     
 }
 
 
 
-/*
-TO DO:
-import working library   X
-Create encoder ports
-create EncoderDistancePerPulse      X?
-Create trajectory in RobotContainer      X?
-Create drivetrain in RobotContainer     X
 
 
-
-*/ 

@@ -21,6 +21,7 @@ deploy {
             // want to store a team number in this file.
             team = project.frc.getTeamNumber()
             debug = false
+            checkImage = false
 
             frcJavaArtifact('frcJava') {
             }
